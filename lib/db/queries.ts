@@ -3,7 +3,9 @@
 
 // ---- Minimal types agar import dari ./schema tidak diperlukan ----
 export type VisibilityType = 'private' | 'public';
-export type ArtifactKind = 'text' | 'code' | 'image' | 'other';
+// SESUDAH
+export type ArtifactKind = 'text' | 'code' | 'image' | 'sheet' | 'other';
+
 
 export type User = { id: string; email: string; password?: string | null };
 export type Chat = { id: string; userId: string; title?: string; visibility?: VisibilityType; createdAt?: Date };
@@ -71,8 +73,9 @@ export async function getVotesByChatId(_args: { id: string }) {
 
 // -------------- Documents / Suggestions --------------
 export async function saveDocument(_args: { id: string; title: string; kind: ArtifactKind; content: string; userId: string }) {
-  return [{ id: _args.id }]; // mirip .returning()
+  return [{ id: _args.id }];
 }
+
 export async function getDocumentsById(_args: { id: string }) {
   return [] as DocumentRow[];
 }
