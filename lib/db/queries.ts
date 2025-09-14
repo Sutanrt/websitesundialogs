@@ -617,11 +617,16 @@ export async function getStreamIdsByChatId(_args: { chatId: string }) {
 }
 
 export async function getDocumentsById(_args: { ids: string[] }) {
-  // tanpa DB, tidak ada dokumen
-  return [];
+  return []; // tanpa DB, tidak ada dokumen
 }
 
 export async function saveDocument(_args: any) {
-  // no-op saat DB dimatikan
-  return { id: 'stub-doc' };
+  return { id: 'stub-doc' }; // no-op
+}
+
+export async function deleteDocumentsByIdAfterTimestamp(_args: {
+  ids: string[];
+  timestamp: Date;
+}) {
+  return { deleted: 0 }; // no-op
 }
