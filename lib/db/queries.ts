@@ -609,3 +609,19 @@ export async function getSuggestionsByDocumentId(_args: any) {
   if (__DB_OFF__) return [];
   return [];
 }
+
+// lib/db/queries.ts (tambah di bawah; aman walau DB off)
+export async function getStreamIdsByChatId(_args: { chatId: string }) {
+  // tanpa DB, tidak ada stream id tersimpan
+  return [];
+}
+
+export async function getDocumentsById(_args: { ids: string[] }) {
+  // tanpa DB, tidak ada dokumen
+  return [];
+}
+
+export async function saveDocument(_args: any) {
+  // no-op saat DB dimatikan
+  return { id: 'stub-doc' };
+}

@@ -263,22 +263,26 @@ import { isProductionEnvironment } from '@/lib/constants';
 import { generateUUID } from '@/lib/utils';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
 import { geolocation } from '@vercel/functions';
-import {
-  createResumableStreamContext,
-  type ResumableStreamContext,
-} from 'resumable-stream';
-import { after } from 'next/server';
+
 import { ChatSDKError } from '@/lib/errors';
 import type { ChatMessage } from '@/lib/types';
 import type { ChatModel } from '@/lib/ai/models';
 import type { VisibilityType } from '@/components/visibility-selector';
 
+
+import {
+  createResumableStreamContext,
+  type ResumableStreamContext,
+} from 'resumable-stream';
+import { after } from 'next/server';
+
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-// ===== resumable stream (opsional; auto-off kalau tak ada REDIS_URL) =====
 let globalStreamContext: ResumableStreamContext | null = null;
-function getStreamContext() {
+
+// >>> INI HARUS DIEKSPORT <<<
+export function getStreamContext() {
   if (!globalStreamContext) {
     try {
       globalStreamContext = createResumableStreamContext({ waitUntil: after });
@@ -292,6 +296,8 @@ function getStreamContext() {
   }
   return globalStreamContext;
 }
+
+// ===== resumable stream (opsional; auto-off kalau tak ada REDIS_URL) =====
 
 export async function POST(request: Request) {
   let body: PostRequestBody;
