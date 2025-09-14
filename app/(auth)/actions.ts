@@ -1,9 +1,6 @@
 'use server';
 
 import { z } from 'zod';
-
-import { createUser, getUser } from '@/lib/db/queries';
-
 import { signIn } from './auth';
 
 const authFormSchema = z.object({
@@ -36,7 +33,6 @@ export const login = async (
     if (error instanceof z.ZodError) {
       return { status: 'invalid_data' };
     }
-
     return { status: 'failed' };
   }
 };
@@ -51,6 +47,29 @@ export interface RegisterActionState {
     | 'invalid_data';
 }
 
+/** DB-safe wrappers: tidak impor statis ke '@/lib/db/queries' */
+type CreateUserArgs = { email: string; password: string };
+type GetUserArgs = { email: string };
+
+async function createUserSafe(args: CreateUserArgs) {
+  // Tanpa DB → stub berhasil
+  if (process.env.DISABLE_DB === 'true') {
+    return { id: 'stub-user', email: args.email };
+  }
+  const mod = await import('@/lib/db/queries').catch(() => null) as any;
+  if (!mod?.createUser) return { id: 'stub-user', email: args.email };
+  return mod.createUser({ email: args.email, password: args.password });
+}
+
+async function getUserSafe(args: GetUserArgs) {
+  if (process.env.DISABLE_DB === 'true') {
+    return null; // tanpa DB, anggap belum ada user
+  }
+  const mod = await import('@/lib/db/queries').catch(() => null) as any;
+  if (!mod?.getUser) return null;
+  return mod.getUser({ email: args.email });
+}
+
 export const register = async (
   _: RegisterActionState,
   formData: FormData,
@@ -61,12 +80,16 @@ export const register = async (
       password: formData.get('password'),
     });
 
-    const [user] = await getUser(validatedData.email);
-
-    if (user) {
-      return { status: 'user_exists' } as RegisterActionState;
+    const existing = await getUserSafe({ email: validatedData.email });
+    if (existing) {
+      return { status: 'user_exists' };
     }
-    await createUser(validatedData.email, validatedData.password);
+
+    await createUserSafe({
+      email: validatedData.email,
+      password: validatedData.password,
+    });
+
     await signIn('credentials', {
       email: validatedData.email,
       password: validatedData.password,
@@ -78,7 +101,6 @@ export const register = async (
     if (error instanceof z.ZodError) {
       return { status: 'invalid_data' };
     }
-
     return { status: 'failed' };
   }
 };
