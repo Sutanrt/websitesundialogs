@@ -9,7 +9,17 @@ export type ArtifactKind = 'text' | 'code' | 'image' | 'sheet' | 'other';
 
 export type User = { id?: string | null; email: string; password?: string | null };
 export type Chat = { id?: string | null; userId?: string | null; title?: string; visibility?: VisibilityType; createdAt?: Date };
-export type DBMessage = { id?: string|null; chatId: string;userId?: string | null; role?: 'user' | 'assistant' | 'system'; content?: string; createdAt?: Date };
+// lib/db/queries.ts
+export type DBMessage = {
+  id: string;
+  createdAt: Date;                         // wajib
+  chatId: string;
+  role: 'user' | 'assistant' | 'system';   // wajib
+  parts: unknown;                           // wajib
+  attachments: unknown;                     // wajib
+  content?: string;                         // opsional kalau masih dipakai di tempat lain
+};
+
 export type Suggestion = { id?: string|null; documentId: string; documentCreatedAt?: Date; content?: string };
 export type DocumentRow = { id?: string|null; title: string; kind: ArtifactKind; content: string; userId?: string|null; createdAt?: Date };
 
