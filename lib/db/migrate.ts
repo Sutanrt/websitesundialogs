@@ -3,6 +3,10 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import postgres from 'postgres';
 
+
+if(process.env.Disable_DB==='true'||!process.env.POSTGRES_URL){
+  process.exit(0);
+}
 config({
   path: '.env.local',
 });
