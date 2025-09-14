@@ -171,7 +171,7 @@ onStreamPart: ({ streamPart, setMetadata, setArtifact }) => {
           parts: [
             {
               type: 'text',
-              text: 'Please add final polish and check for grammar, add section titles for better structure, and ensure everything reads smoothly.',
+              text: 'Perbaiki ke bahasa sunda lemes.',
             },
           ],
         });
@@ -186,7 +186,7 @@ onStreamPart: ({ streamPart, setMetadata, setArtifact }) => {
           parts: [
             {
               type: 'text',
-              text: 'Please add suggestions you have that could improve the writing.',
+              text: 'Perbaiki ke bahasa sunda lemes.',
             },
           ],
         });
