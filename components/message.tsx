@@ -1,7 +1,9 @@
 'use client';
 import cx from 'classnames';
+import { pickOpener } from '@/lib/ai/openers';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useState } from 'react';
+import { ensureReadableSpacing } from '@/lib/ai/spacing';
 import type { Vote } from '@/lib/db/schema';
 import { DocumentToolCall, DocumentToolResult } from './document';
 import { PencilEditIcon, SparklesIcon } from './icons';
@@ -115,37 +117,79 @@ const PurePreviewMessage = ({
 
               if (type === 'text') {
                 if (mode === 'view') {
-                  return (
-                    <div key={key} className="flex flex-row gap-2 items-start">
-                      {message.role === 'user' && !isReadonly && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              data-testid="message-edit-button"
-                              variant="ghost"
-                              className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
-                              onClick={() => {
-                                setMode('edit');
-                              }}
-                            >
-                              <PencilEditIcon />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Edit message</TooltipContent>
-                        </Tooltip>
-                      )}
+                  const raw = part.text ?? '';
+                  const neatText =
+                  message.role === 'assistant' ? ensureReadableSpacing(raw) : raw;
+                  // return (
+                  //   <div key={key} className="flex flex-row gap-2 items-start">
+                  //     {message.role === 'user' && !isReadonly && (
+                  //       <Tooltip>
+                  //         <TooltipTrigger asChild>
+                  //           <Button
+                  //             data-testid="message-edit-button"
+                  //             variant="ghost"
+                  //             className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
+                  //             onClick={() => {
+                  //               setMode('edit');
+                  //             }}
+                  //           >
+                  //             <PencilEditIcon />
+                  //           </Button>
+                  //         </TooltipTrigger>
+                  //         <TooltipContent>Edit message</TooltipContent>
+                  //       </Tooltip>
+                  //     )}
 
-                      <div
-                        data-testid="message-content"
-                        className={cn('flex flex-col gap-4', {
-                          'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
-                            message.role === 'user',
-                        })}
-                      >
-                        <Markdown>{sanitizeText(part.text)}</Markdown>
-                      </div>
-                    </div>
-                  );
+                  //     <div
+                  //       data-testid="message-content"
+                  //       className={cn('flex flex-col gap-4', {
+                  //         'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
+                  //           message.role === 'user',
+                  //       })}
+                  //     >
+                  //       <Markdown>{sanitizeText(part.text)}</Markdown>
+                  //     </div>
+                  //   </div>
+                  // );
+                  return (
+      <div key={key} className="flex flex-row gap-2 items-start">
+        {message.role === 'user' && !isReadonly && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                data-testid="message-edit-button"
+                variant="ghost"
+                className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
+                onClick={() => setMode('edit')}
+              >
+                <PencilEditIcon />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Edit message</TooltipContent>
+          </Tooltip>
+        )}
+
+        <div
+          data-testid="message-content"
+          className={cn('flex flex-col gap-3', {
+            'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
+              message.role === 'user',
+          })}
+        >
+          {/* header khusus assistant */}
+          {message.role === 'assistant' && (
+        <div className="text-sm text-muted-foreground">
+          {pickOpener(message.id)}
+        </div>
+      )}
+
+          {/* TEKS: pertahankan spasi & line break */}
+          <div className="whitespace-pre-wrap break-words leading-7 text-[15px]">
+            <Markdown>{sanitizeText(neatText)}</Markdown>
+          </div>
+        </div>
+      </div>
+    );
                 }
 
                 if (mode === 'edit') {

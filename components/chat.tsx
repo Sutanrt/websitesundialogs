@@ -1,4 +1,6 @@
 'use client';
+// + ADD: import spacing util
+import { ensureReadableSpacing } from '@/lib/ai/spacing';
 
 import { DefaultChatTransport } from 'ai';
 import { useChat } from '@ai-sdk/react';
@@ -125,7 +127,19 @@ export function Chat({
     resumeStream,
     setMessages,
   });
+    const displayMessages = messages.map((m) => {
+    if (m.role !== 'assistant') return m;
 
+    // Modifikasi hanya part teks; biarkan part lain (tool, reasoning, image, dll) apa adanya
+    const parts = (m.parts ?? []).map((p) => {
+      if (p?.type !== 'text') return p;
+      const neat = ensureReadableSpacing(p.text ?? '');
+      return { ...p, text: `✅ Kamu sudah bagus — berikut revisinya:\n${neat}` };
+    });
+
+    return { ...m, parts };
+  });
+  
   return (
     <>
       <div className="flex flex-col min-w-0 h-dvh bg-background">
@@ -141,7 +155,7 @@ export function Chat({
           chatId={id}
           status={status}
           votes={votes}
-          messages={messages}
+          messages={displayMessages} 
           setMessages={setMessages}
           regenerate={regenerate}
           isReadonly={isReadonly}
