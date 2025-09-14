@@ -52,7 +52,7 @@ const PurePreviewMessage = ({
   );
 
   useDataStream();
-
+  
   return (
     <AnimatePresence>
       <motion.div
@@ -178,11 +178,11 @@ const PurePreviewMessage = ({
           })}
         >
           {/* header khusus assistant */}
-          {message.role === 'assistant' && (
+          {/* {message.role === 'assistant' && (
         <div className="text-sm text-muted-foreground">
           {pickOpener(message.id)}
         </div>
-      )}
+      )} */}
 
           {/* TEKS: pertahankan spasi & line break */}
           <div className="whitespace-pre-wrap break-words leading-7 text-[15px]">

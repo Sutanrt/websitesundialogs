@@ -155,7 +155,7 @@ export function Chat({
           chatId={id}
           status={status}
           votes={votes}
-          messages={messages} 
+          messages={displayMessages} 
           setMessages={setMessages}
           regenerate={regenerate}
           isReadonly={isReadonly}
