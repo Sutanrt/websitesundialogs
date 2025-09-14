@@ -99,7 +99,7 @@ const PurePreviewMessage = ({
           )}
         >
           {message.role === 'assistant' && (
-            <div className="h-15 w-15 flex items-center justify-center shrink-0">
+            <div className="h-11 w-11 flex items-center justify-center shrink-0">
               <div className="translate-y-px">
                 <BotIcon size={56} />
               </div>
@@ -430,7 +430,7 @@ export const ThinkingMessage = () => {
           },
         )}
       >
-        <div className="h-15 w-15 flex items-center justify-center shrink-0r">
+        <div className="h-11 w-11 flex items-center justify-center shrink-0r">
           <BotIcon size={56} />
         </div>
 
