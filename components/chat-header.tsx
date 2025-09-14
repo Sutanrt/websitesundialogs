@@ -29,6 +29,9 @@ function PureChatHeader({
 }) {
   const router = useRouter();
   const { open } = useSidebar();
+  const modelSelectorSession = {
+  user: { type: (session as any)?.user?.type },
+} as { user?: { type?: string } };
 
   const { width: windowWidth } = useWindowSize();
 
@@ -56,11 +59,12 @@ function PureChatHeader({
       )}
 
       {!isReadonly && (
-        <ModelSelector
-          session={session}
-          selectedModelId={selectedModelId}
-          className="order-1 md:order-2"
-        />
+
+<ModelSelector
+  session={modelSelectorSession}
+  selectedModelId={selectedModelId}
+  className="order-1 md:order-2"
+/>
       )}
 
       {!isReadonly && (

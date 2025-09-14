@@ -4,11 +4,18 @@
 // ---- Minimal types agar import dari ./schema tidak diperlukan ----
 export type VisibilityType = 'private' | 'public';
 // SESUDAH
-export type ArtifactKind = 'text' | 'code' | 'image' | 'sheet' | 'other';
+export type ArtifactKind = 'text' | 'code' | 'image' | 'sheet';
 
 
 export type User = { id?: string | null; email: string; password?: string | null };
-export type Chat = { id?: string | null; userId?: string | null; title?: string; visibility?: VisibilityType; createdAt?: Date };
+export type Chat = {
+  id: string;
+  userId: string;
+  title?: string;
+  visibility?: VisibilityType;  // boleh opsional
+  createdAt?: Date;
+};
+
 // lib/db/queries.ts
 export type DBMessage = {
   id: string;
@@ -19,6 +26,7 @@ export type DBMessage = {
   attachments: unknown;                     // wajib
   content?: string;                         // opsional kalau masih dipakai di tempat lain
 };
+
 
 export type Suggestion = { id?: string|null; documentId: string; documentCreatedAt?: Date; content?: string };
 export type DocumentRow = { id?: string|null; title: string; kind: ArtifactKind; content: string; userId?: string|null; createdAt?: Date };

@@ -10,47 +10,62 @@ import {
   RedoIcon,
   UndoIcon,
 } from '@/components/icons';
-import type { Suggestion } from '@/lib/db/schema';
+// import type { Suggestion } from '@/lib/db/schema';
 import { toast } from 'sonner';
 import { getSuggestions } from '../actions';
 
-interface TextArtifactMetadata {
-  suggestions: Array<Suggestion>;
+type UISuggestion = {
+  id: string;
+  description: string | null;
+  createdAt: Date;
+  documentId: string;
+  userId: string;
+  documentCreatedAt: Date;
+  originalText: string;
+  suggestedText: string;
+  isResolved: boolean;
+};
+
+function normalizeSuggestion(s: any): UISuggestion {
+  return {
+    id: s.id,
+    description: s.description ?? null,
+    createdAt: s.createdAt ?? new Date(0),
+    documentId: s.documentId,
+    userId: s.userId ?? 'no-db',
+    documentCreatedAt: s.documentCreatedAt ?? new Date(0),
+    originalText: s.originalText ?? '',
+    suggestedText: s.suggestedText ?? '',
+    isResolved: s.isResolved ?? false,
+  };
 }
+interface TextArtifactMetadata {
+  suggestions: Array<UISuggestion>;
+}
+// interface TextArtifactMetadata {
+//   suggestions: Array<Suggestion>;
+// }
 
 export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
   kind: 'text',
   description: 'Useful for text content, like drafting essays and emails.',
-  initialize: async ({ documentId, setMetadata }) => {
-    const suggestions = await getSuggestions({ documentId });
+initialize: async ({ documentId, setMetadata }) => {
+  const suggestions = await getSuggestions({ documentId });
 
-    setMetadata({
-      suggestions,
-    });
-  },
-  onStreamPart: ({ streamPart, setMetadata, setArtifact }) => {
-    if (streamPart.type === 'data-suggestion') {
-      setMetadata((metadata) => {
-        return {
-          suggestions: [...metadata.suggestions, streamPart.data],
-        };
-      });
-    }
-
-    if (streamPart.type === 'data-textDelta') {
-      setArtifact((draftArtifact) => {
-        return {
-          ...draftArtifact,
-          content: draftArtifact.content + streamPart.data,
-          isVisible:
-            draftArtifact.status === 'streaming' &&
-            draftArtifact.content.length > 400 &&
-            draftArtifact.content.length < 450
-              ? true
-              : draftArtifact.isVisible,
-          status: 'streaming',
-        };
-      });
+  // ⬇️ NORMALIZE sebelum set
+  setMetadata({
+    suggestions: suggestions.map(normalizeSuggestion),
+  });
+},
+onStreamPart: ({ streamPart, setMetadata, setArtifact }) => {
+  if (streamPart.type === 'data-suggestion') {
+    setMetadata((metadata) => ({
+      suggestions: [
+        ...metadata.suggestions,
+        normalizeSuggestion(streamPart.data),
+      ],
+    }));
+  
     }
   },
   content: ({

@@ -6,24 +6,34 @@ interface Entitlements {
   availableChatModelIds: Array<ChatModel['id']>;
 }
 
+// (opsional) profil dasar biar ga duplikatif
+const BASE: Entitlements = {
+  maxMessagesPerDay: 100,
+  availableChatModelIds: ['chat-model', 'chat-model-reasoning'],
+};
+
 export const entitlementsByUserType: Record<UserType, Entitlements> = {
-  /*
-   * For users without an account
-   */
   guest: {
     maxMessagesPerDay: 20,
     availableChatModelIds: ['chat-model', 'chat-model-reasoning'],
   },
-
-  /*
-   * For users with an account
-   */
-  regular: {
-    maxMessagesPerDay: 100,
+  free: BASE,
+  pro: {
+    maxMessagesPerDay: 500,
     availableChatModelIds: ['chat-model', 'chat-model-reasoning'],
   },
-
-  /*
-   * TODO: For users with an account and a paid membership
-   */
+  enterprise: {
+    maxMessagesPerDay: 5000,
+    availableChatModelIds: ['chat-model', 'chat-model-reasoning'],
+  },
+  admin: {
+    maxMessagesPerDay: 999_999,
+    availableChatModelIds: ['chat-model', 'chat-model-reasoning'],
+  },
 };
+
+// Helper supaya legacy "regular" tetap jalan → dipetakan ke "free"
+export function getEntitlements(userType?: string): Entitlements {
+  const normalized = userType === 'regular' ? 'free' : (userType ?? 'guest');
+  return entitlementsByUserType[normalized as UserType];
+}

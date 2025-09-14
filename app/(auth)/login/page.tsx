@@ -3,46 +3,35 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useActionState, useEffect, useState } from 'react';
-import { toast } from '@/components/toast';
+import { useSession } from 'next-auth/react';
 
+import { toast } from '@/components/toast';
 import { AuthForm } from '@/components/auth-form';
 import { SubmitButton } from '@/components/submit-button';
-
 import { login, type LoginActionState } from '../actions';
-import { useSession } from 'next-auth/react';
 
 export default function Page() {
   const router = useRouter();
+  const { update: updateSession } = useSession();
 
   const [email, setEmail] = useState('');
   const [isSuccessful, setIsSuccessful] = useState(false);
 
-  const [state, formAction] = useActionState<LoginActionState, FormData>(
-    login,
-    {
-      status: 'idle',
-    },
-  );
-
-  const { update: updateSession } = useSession();
+  const [state, formAction] = useActionState<LoginActionState, FormData>(login, {
+    status: 'idle',
+  });
 
   useEffect(() => {
     if (state.status === 'failed') {
-      toast({
-        type: 'error',
-        description: 'Invalid credentials!',
-      });
+      toast({ type: 'error', description: 'Invalid credentials!' });
     } else if (state.status === 'invalid_data') {
-      toast({
-        type: 'error',
-        description: 'Failed validating your submission!',
-      });
+      toast({ type: 'error', description: 'Failed validating your submission!' });
     } else if (state.status === 'success') {
       setIsSuccessful(true);
-      updateSession();
+      void updateSession(); // biar ga unhandled promise
       router.refresh();
     }
-  }, [state.status]);
+  }, [state.status, router, updateSession]); // ✅ tambahkan deps
 
   const handleSubmit = (formData: FormData) => {
     setEmail(formData.get('email') as string);
@@ -58,6 +47,7 @@ export default function Page() {
             Use your email and password to sign in
           </p>
         </div>
+
         <AuthForm action={handleSubmit} defaultEmail={email}>
           <SubmitButton isSuccessful={isSuccessful}>Sign in</SubmitButton>
           <p className="text-center text-sm text-gray-600 mt-4 dark:text-zinc-400">

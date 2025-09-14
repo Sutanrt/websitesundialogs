@@ -38,21 +38,27 @@
 // lib/ai/providers.ts
 // lib/ai/providers.ts
 // lib/ai/providers.ts
+// lib/ai/providers.ts
+// lib/ai/providers.ts
+// lib/ai/providers.ts
 import { createOpenAI } from '@ai-sdk/openai';
 
 const base =
-  (process.env.OLLAMA_BASE_URL?.replace(/\/$/, '') || 'http://127.0.0.1:11434') +
-  '/v1';
+  (process.env.OLLAMA_BASE_URL?.replace(/\/$/, '') || 'http://127.0.0.1:11434') + '/v1';
 
-const openai = createOpenAI({
-  baseURL: base,                            // -> http://127.0.0.1:11434/v1
-  apiKey: process.env.OLLAMA_API_KEY || 'ollama', // Ollama ga butuh key, dummy aja
+const openaiOllama = createOpenAI({
+  baseURL: base,
+  apiKey: process.env.OLLAMA_API_KEY || 'ollama',
 });
 
-const modelName = process.env.OLLAMA_MODEL || 'qwen2:7b-instruct';
+const chatModelName = process.env.OLLAMA_MODEL || 'qwen2:7b-instruct';
 
 export const myProvider = {
-  // PENTING: gunakan chat-completions
-  languageModel: (_id: string) => openai.chat(modelName),
-};
+  // hanya Ollama (OpenAI-compatible chat-completions)
+  languageModel: (_id: string) => openaiOllama.chat(chatModelName),
 
+  // tidak pakai image provider → stub supaya compile/run aman
+  imageModel: (_id: string) => {
+    throw new Error('Image generation is disabled (only Ollama is configured).');
+  },
+};

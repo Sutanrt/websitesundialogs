@@ -1,4 +1,5 @@
-export type UserType = 'free' | 'pro' | 'enterprise' | 'admin';
+export type UserType = 'free' | 'pro' | 'enterprise' | 'admin'|'guest';
+
 type Session = { user: { id: string; type: UserType; name?: string; email?: string } } | null;
 
 export async function auth(): Promise<Session> {
