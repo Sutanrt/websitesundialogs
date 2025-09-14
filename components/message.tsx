@@ -30,7 +30,7 @@ import Image from 'next/image';
 
 
 export const BotIcon = ({
-  size = 16,
+  size = 28,
   className,
   src = '/icons/bot.png',
 }: {
@@ -101,7 +101,7 @@ const PurePreviewMessage = ({
           {message.role === 'assistant' && (
             <div className="h-10 w-10 flex items-center justify-center shrink-0">
               <div className="translate-y-px">
-                <BotIcon size={28} />
+                <BotIcon size={56} />
               </div>
             </div>
           )}
@@ -431,7 +431,7 @@ export const ThinkingMessage = () => {
         )}
       >
         <div className="h-10 w-10 flex items-center justify-center shrink-0r">
-          <BotIcon size={28} />
+          <BotIcon size={56} />
         </div>
 
         <div className="flex flex-col gap-2 w-full">
