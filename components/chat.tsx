@@ -134,7 +134,7 @@ export function Chat({
     const parts = (m.parts ?? []).map((p) => {
       if (p?.type !== 'text') return p;
       const neat = ensureReadableSpacing(p.text ?? '');
-      return { ...p, text: `\n${neat}` };
+      return { ...p, text: `${neat}` };
     });
 
     return { ...m, parts };
