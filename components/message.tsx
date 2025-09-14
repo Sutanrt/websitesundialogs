@@ -99,9 +99,9 @@ const PurePreviewMessage = ({
           )}
         >
           {message.role === 'assistant' && (
-            <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border bg-background">
+            <div className="h-10 w-10 flex items-center justify-center shrink-0">
               <div className="translate-y-px">
-                <BotIcon size={14} />
+                <BotIcon size={28} />
               </div>
             </div>
           )}
@@ -205,11 +205,11 @@ const PurePreviewMessage = ({
           })}
         >
           {/* header khusus assistant */}
-          {/* {message.role === 'assistant' && (
+          {message.role === 'assistant' && (
         <div className="text-sm text-muted-foreground">
           {pickOpener(message.id)}
         </div>
-      )} */}
+      )}
 
           {/* TEKS: pertahankan spasi & line break */}
           <div className="whitespace-pre-wrap break-words leading-7 text-[15px]">
@@ -430,8 +430,8 @@ export const ThinkingMessage = () => {
           },
         )}
       >
-        <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border">
-          <BotIcon size={14} />
+        <div className="h-10 w-10 flex items-center justify-center shrink-0r">
+          <BotIcon size={28} />
         </div>
 
         <div className="flex flex-col gap-2 w-full">
