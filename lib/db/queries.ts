@@ -7,11 +7,11 @@ export type VisibilityType = 'private' | 'public';
 export type ArtifactKind = 'text' | 'code' | 'image' | 'sheet' | 'other';
 
 
-export type User = { id: string; email: string; password?: string | null };
-export type Chat = { id: string; userId: string; title?: string; visibility?: VisibilityType; createdAt?: Date };
-export type DBMessage = { id: string; chatId: string; role?: 'user' | 'assistant' | 'system'; content?: string; createdAt?: Date };
-export type Suggestion = { id: string; documentId: string; documentCreatedAt?: Date; content?: string };
-export type DocumentRow = { id: string; title: string; kind: ArtifactKind; content: string; userId: string; createdAt?: Date };
+export type User = { id?: string | null; email: string; password?: string | null };
+export type Chat = { id?: string | null; userId?: string | null; title?: string; visibility?: VisibilityType; createdAt?: Date };
+export type DBMessage = { id?: string|null; chatId: string;userId?: string | null; role?: 'user' | 'assistant' | 'system'; content?: string; createdAt?: Date };
+export type Suggestion = { id?: string|null; documentId: string; documentCreatedAt?: Date; content?: string };
+export type DocumentRow = { id?: string|null; title: string; kind: ArtifactKind; content: string; userId?: string|null; createdAt?: Date };
 
 // Flag runtime (tetap ada kalau nanti kamu mau aktifkan DB)
 const DB_OFF = process.env.DISABLE_DB === 'true' || !process.env.POSTGRES_URL;
