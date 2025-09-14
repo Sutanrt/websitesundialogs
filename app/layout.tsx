@@ -6,11 +6,21 @@ import { ThemeProvider } from '@/components/theme-provider';
 import './globals.css';
 import { SessionProvider } from 'next-auth/react';
 
+
 export const metadata: Metadata = {
-  metadataBase: new URL('https://chat.vercel.ai'),
-  title: 'Sundialog',
-  description: 'Chatbot Penghalus Bahasa Sunda.',
+  title: { default: 'Sundialogs', template: '%s · Sundialogs' },
+  icons: {
+    icon: [{ url: '/favicon.ico?v=3' }],          // paksa refresh
+    apple: [{ url: '/icons/apple-touch-icon.png?v=3' }],
+  },
+  openGraph: {
+    title: 'Sundialogs',
+    images: ['/og.png?v=3'],
+  },
 };
+
+
+
 
 export const viewport = {
   maximumScale: 1, // Disable auto-zoom on mobile Safari
