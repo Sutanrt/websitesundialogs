@@ -1,21 +1,21 @@
-import { signIn } from '@/app/(auth)/auth';
-import { isDevelopmentEnvironment } from '@/lib/constants';
-import { getToken } from 'next-auth/jwt';
 import { NextResponse } from 'next/server';
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const redirectUrl = searchParams.get('redirectUrl') || '/';
+export const runtime = 'nodejs';
 
-  const token = await getToken({
-    req: request,
-    secret: process.env.AUTH_SECRET,
-    secureCookie: !isDevelopmentEnvironment,
-  });
+export async function GET(req: Request) {
+  try {
+    const url = new URL(req.url);
+    const redirectUrl = url.searchParams.get('redirectUrl') ?? '/';
 
-  if (token) {
-    return NextResponse.redirect(new URL('/', request.url));
+    if (process.env.DISABLE_AUTH === 'true') {
+      // PENTING: pakai return!
+      return NextResponse.redirect(redirectUrl, 307);
+    }
+
+    // Mode prod (kalau DISABLE_AUTH !== 'true')
+    return new NextResponse('Guest auth only available in prod setup', { status: 404 });
+  } catch (err) {
+    console.error('guest route error:', err);
+    return new NextResponse('Bad Request', { status: 400 });
   }
-
-  return signIn('guest', { redirect: true, redirectTo: redirectUrl });
 }

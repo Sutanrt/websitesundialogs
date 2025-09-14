@@ -3,6 +3,7 @@ import { CopyIcon, RedoIcon, UndoIcon } from '@/components/icons';
 import { ImageEditor } from '@/components/image-editor';
 import { toast } from 'sonner';
 
+
 export const imageArtifact = new Artifact({
   kind: 'image',
   description: 'Useful for image generation',

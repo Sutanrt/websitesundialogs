@@ -1,10 +1,17 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { guestRegex, isDevelopmentEnvironment } from './lib/constants';
+// middleware.ts
+
+
+
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
 
+  const { pathname } = request.nextUrl;
+  if (process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true') {
+    return NextResponse.next(); // jangan redirect kemana-mana
+  }
   /*
    * Playwright starts the dev server and requires a 200 status to
    * begin the tests, so this ensures that the tests can start

@@ -12,36 +12,52 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { chatModels } from '@/lib/ai/models';
 import { cn } from '@/lib/utils';
-
 import { CheckCircleFillIcon, ChevronDownIcon } from './icons';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
-import type { Session } from 'next-auth';
+
+// tipe ringan agar tidak bergantung next-auth saat dev
+type SimpleSession = { user?: { type?: string } } | null;
+
+interface Props extends React.ComponentProps<typeof Button> {
+  session?: SimpleSession;
+  selectedModelId: string;
+  className?: string;
+}
 
 export function ModelSelector({
   session,
   selectedModelId,
   className,
-}: {
-  session: Session;
-  selectedModelId: string;
-} & React.ComponentProps<typeof Button>) {
+  ...btnProps
+}: Props) {
   const [open, setOpen] = useState(false);
-  const [optimisticModelId, setOptimisticModelId] =
-    useOptimistic(selectedModelId);
+  const [optimisticModelId, setOptimisticModelId] = useOptimistic(selectedModelId);
 
-  const userType = session.user.type;
-  const { availableChatModelIds } = entitlementsByUserType[userType];
+  // ===== INI BAGIAN userType / allowedIds / availableChatModels =====
+  const userType = (session?.user?.type ?? 'free') as string;
 
-  const availableChatModels = chatModels.filter((chatModel) =>
-    availableChatModelIds.includes(chatModel.id),
+  const ent: any = entitlementsByUserType ?? {};
+  const defaultIds = chatModels.map((m) => m.id);
+  const freeIds = Array.isArray(ent['free']?.availableChatModelIds)
+    ? ent['free'].availableChatModelIds
+    : defaultIds;
+
+  const allowedIds = Array.isArray(ent[userType]?.availableChatModelIds)
+    ? ent[userType].availableChatModelIds
+    : freeIds;
+
+  const availableChatModels = useMemo(
+    () => chatModels.filter((m) => allowedIds.includes(m.id)),
+    [allowedIds]
   );
+  // ==================================================================
 
   const selectedChatModel = useMemo(
     () =>
-      availableChatModels.find(
-        (chatModel) => chatModel.id === optimisticModelId,
-      ),
-    [optimisticModelId, availableChatModels],
+      availableChatModels.find((m) => m.id === optimisticModelId) ??
+      availableChatModels[0] ??
+      chatModels[0],
+    [optimisticModelId, availableChatModels]
   );
 
   return (
@@ -50,13 +66,14 @@ export function ModelSelector({
         asChild
         className={cn(
           'w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',
-          className,
+          className
         )}
       >
         <Button
           data-testid="model-selector"
           variant="outline"
           className="md:px-2 md:h-[34px]"
+          {...btnProps}
         >
           {selectedChatModel?.name}
           <ChevronDownIcon />
@@ -65,6 +82,7 @@ export function ModelSelector({
       <DropdownMenuContent align="start" className="min-w-[300px]">
         {availableChatModels.map((chatModel) => {
           const { id } = chatModel;
+          const active = id === optimisticModelId;
 
           return (
             <DropdownMenuItem
@@ -72,13 +90,12 @@ export function ModelSelector({
               key={id}
               onSelect={() => {
                 setOpen(false);
-
                 startTransition(() => {
                   setOptimisticModelId(id);
                   saveChatModelAsCookie(id);
                 });
               }}
-              data-active={id === optimisticModelId}
+              data-active={active}
               asChild
             >
               <button
@@ -91,7 +108,6 @@ export function ModelSelector({
                     {chatModel.description}
                   </div>
                 </div>
-
                 <div className="text-foreground dark:text-foreground opacity-0 group-data-[active=true]/item:opacity-100">
                   <CheckCircleFillIcon />
                 </div>
