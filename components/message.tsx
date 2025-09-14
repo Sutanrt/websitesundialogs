@@ -21,11 +21,38 @@ import { MessageReasoning } from './message-reasoning';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { ChatMessage } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
-import { BotIcon } from 'lucide-react';
+import Image from 'next/image';
+// import { BotIcon } from 'lucide-react';
 
 // Type narrowing is handled by TypeScript's control flow analysis
 // The AI SDK provides proper discriminated unions for tool calls
 
+
+
+export const BotIcon = ({
+  size = 16,
+  className,
+  src = '/icons/bot.png',
+}: {
+  size?: number;
+  className?: string;
+  src?: string; // bisa override kalau nanti ganti file
+}) => {
+  return (
+    <Image
+      src={src}
+      alt="Bot"
+      width={size}
+      height={size}
+      className={cn(
+        'inline-block select-none object-contain',
+        // kalau ikon PNG putih & ingin auto cocok dark mode:
+        // 'dark:invert',
+        className
+      )}
+      // priority // <- kalau ikon dipakai di header dan perlu cepat muncul
+    />
+  );};
 const PurePreviewMessage = ({
   chatId,
   message,
@@ -404,7 +431,7 @@ export const ThinkingMessage = () => {
         )}
       >
         <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border">
-          <SparklesIcon size={14} />
+          <BotIcon size={14} />
         </div>
 
         <div className="flex flex-col gap-2 w-full">
