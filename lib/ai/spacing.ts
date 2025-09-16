@@ -4,7 +4,7 @@
 export function isUnspaced(s: string) {
   const onlyText = s.replace(/\s+/g, "");
   const spaces = (s.match(/\s/g) || []).length;
-  if (onlyText.length < 12) return false;
+  if (onlyText.length < 6) return false;
   return spaces <= Math.max(1, Math.floor(onlyText.length / 40));
 }
 
@@ -15,7 +15,7 @@ export function insertHeuristicSpaces(
 ) {
   const target = cfg.target ?? 6;
   const min = cfg.min ?? 3;
-  const max = cfg.max ?? 9;
+  const max = cfg.max ?? 6;
   const vowels = /[aeiouAEIOUéÉ]/;
 
   const tokens = [...raw.matchAll(/[A-Za-zÀ-ÿ]+|\d+|[^\w\s]+/g)].map(m => m[0]);
