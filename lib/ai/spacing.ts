@@ -91,18 +91,17 @@ export function insertHeuristicSpaces(
 // ===== 4) guard utama: dictionary → heuristik kecil → heuristik normal =====
 export function ensureReadableSpacing(s: string) {
   const trimmed = s.replace(/\s+/g, ' ').trim();
-  if (!isUnspaced(trimmed)) return trimmed;
 
-  // langkah 1: pecah berdasarkan kamus kata umum
-  const withBoundaries = insertDictionaryBoundaries(trimmed);
+  // 1) Selalu coba pecah berbasis kamus dulu
+  const dictFirst = insertDictionaryBoundaries(trimmed);
 
-  // kalau masih “nyatu” (mis. kata panjang asing), jatuhkan ke heuristik
-  const len = withBoundaries.length;
-  if (isUnspaced(withBoundaries)) {
-    if (len <= 8)  return insertHeuristicSpaces(withBoundaries, { target: 3, min: 2, max: 4 });
-    if (len <= 20) return insertHeuristicSpaces(withBoundaries, { target: 4, min: 2, max: 6 });
-    return insertHeuristicSpaces(withBoundaries, { target: 6, min: 3, max: 9 });
-  }
+  // 2) Kalau sudah “kebaca”, cukup sampai sini
+  if (!isUnspaced(dictFirst)) return dictFirst;
 
-  return withBoundaries;
+  // 3) Masih nyatu? Jatuhkan ke heuristik (pakai panjang hasil sekarang)
+  const len = dictFirst.length;
+  if (len <= 8)  return insertHeuristicSpaces(dictFirst, { target: 3, min: 2, max: 4 });
+  if (len <= 20) return insertHeuristicSpaces(dictFirst, { target: 4, min: 2, max: 6 });
+  return insertHeuristicSpaces(dictFirst, { target: 6, min: 3, max: 9 });
 }
+
