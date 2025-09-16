@@ -4,7 +4,7 @@
 export function isUnspaced(s: string) {
   const onlyText = s.replace(/\s+/g, "");
   const spaces = (s.match(/\s/g) || []).length;
-  if (onlyText.length < 24) return false;
+  if (onlyText.length < 12) return false;
   return spaces <= Math.max(1, Math.floor(onlyText.length / 40));
 }
 
