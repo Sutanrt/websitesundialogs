@@ -18,7 +18,7 @@ export function isUnspaced(s: string) {
   const noWS = s.replace(/\s+/g, '');
   const spaces = s.length - noWS.length;
   if (noWS.length >= 4 && spaces === 0) return true;
-  return noWS.length >= 12 && spaces <= Math.max(1, Math.floor(noWS.length / 50));
+  return noWS.length >= 18 && spaces <= Math.max(1, Math.floor(noWS.length / 50));
 }
 
 // ===== 2) sisipkan spasi sebelum kata umum jika nempel di tengah =====
