@@ -1,44 +1,70 @@
 // lib/ai/spacing.ts
 
-// 1) Deteksi "nyatu" lebih agresif: 4+ huruf TANPA spasi dianggap nyatu.
+// ===== 0) daftar kata umum (boleh kamu tambah sendiri) =====
+const BOUNDARY_WORDS = [
+  // pronomina / kata hubung umum
+  'abdi','anjeun','maneh','urang','simkuring','aing','salira',
+  'mah','téh','teh','ogé','oge','pisan','sanes','sok','sareng','jeung',
+  'ka','ke','ti','di','nu','anu','sanes','teu','moal','tos','geus','parantos',
+  // verba/adjektiva sering muncul setelah subjek
+  'resep','bogoh','bade','badé','nuju','indit','mulih','balik','hayang','heureuy',
+  'lanceuk','raka','indung','ema',
+  //lainnya
+  'tuang','kalayak','lomba','pisan'
+];
+
+// ===== 1) deteksi "nyatu" agresif =====
 export function isUnspaced(s: string) {
   const noWS = s.replace(/\s+/g, '');
   const spaces = s.length - noWS.length;
-
-  // 4+ huruf tanpa spasi → pasti nyatu
   if (noWS.length >= 4 && spaces === 0) return true;
-
-  // fallback untuk teks panjang: rasio spasi sangat kecil
   return noWS.length >= 18 && spaces <= Math.max(1, Math.floor(noWS.length / 50));
 }
 
-/** 2) Sisipi spasi heuristik pada teks nyatu */
+// ===== 2) sisipkan spasi sebelum kata umum jika nempel di tengah =====
+// mis. "...abdiresep..." → "...abdi resep..."
+function insertDictionaryBoundaries(raw: string) {
+  let out = raw;
+  // urutkan dari yang terpanjang biar gak “kegeser” kata pendeknya
+  const words = [...BOUNDARY_WORDS].sort((a, b) => b.length - a.length);
+
+  for (const w of words) {
+    // tambah spasi di DEPAN kata w jika sebelumnya huruf (tanpa spasi)
+    // gunakan unicode + lookbehind (Node 18+ OK)
+    const re = new RegExp(`(?<=\\p{L})${w}`, 'giu');
+    out = out.replace(re, ' $&');
+
+    // opsional: kalau w diikuti huruf langsung, tambahkan spasi SESUDAH w
+    // contoh "resepka" -> "resep ka"
+    const re2 = new RegExp(`${w}(?=\\p{L})`, 'giu');
+    out = out.replace(re2, '$& ');
+  }
+
+  // rapikan spasi ganda
+  return out.replace(/\s{2,}/g, ' ').trim();
+}
+
+// ===== 3) pemecahan heuristik (fallback) =====
 export function insertHeuristicSpaces(
   raw: string,
   cfg: { target?: number; min?: number; max?: number } = {}
 ) {
-  const target = cfg.target ?? 6; // default (teks panjang) — dipakai kalau tidak dioverride
+  const target = cfg.target ?? 6;
   const min = cfg.min ?? 3;
   const max = cfg.max ?? 9;
-
   const vowels = /[aeiouAEIOUéÉ]/;
 
-  // Kelompokkan huruf/angka vs tanda baca agar yang non-huruf tidak dipecah
   const tokens = [...raw.matchAll(/[A-Za-zÀ-ÿ]+|\d+|[^\w\s]+/g)].map(m => m[0]);
   const parts: string[] = [];
 
   for (const t of tokens) {
-    if (!/[A-Za-zÀ-ÿ]/.test(t) || t.length <= max) {
-      parts.push(t);
-      continue;
-    }
+    if (!/[A-Za-zÀ-ÿ]/.test(t) || t.length <= max) { parts.push(t); continue; }
 
     let i = 0;
     while (i < t.length) {
       const remain = t.length - i;
       if (remain <= max) { parts.push(t.slice(i)); break; }
 
-      // cari titik pecah yang enak: vokal terdekat dalam window [min..max]
       let cut = -1;
       const upper = Math.min(i + max, i + target + 2);
       for (let j = upper; j >= i + min; j--) {
@@ -46,12 +72,9 @@ export function insertHeuristicSpaces(
       }
       if (cut === -1) cut = i + target;
 
-      // hindari putus "n|N" tepat sebelum g/y (ng/ny)
       const next = t[cut] || '';
       const prev = t[cut - 1] || '';
-      if ((prev === 'n' || prev === 'N') && /[gyGY]/.test(next) && cut < i + max) {
-        cut++;
-      }
+      if ((prev === 'n' || prev === 'N') && /[gyGY]/.test(next) && cut < i + max) cut++;
 
       parts.push(t.slice(i, cut));
       i = cut;
@@ -60,21 +83,26 @@ export function insertHeuristicSpaces(
 
   return parts
     .join(' ')
-    .replace(/\s+([,.!?;:])/g, '$1 ') // spasi setelah tanda baca
+    .replace(/\s+([,.!?;:])/g, '$1 ')
     .replace(/\s{2,}/g, ' ')
     .trim();
 }
 
-/** 3) Guard utama: adaptif — untuk teks pendek pakai blok lebih kecil (2–4 huruf) */
+// ===== 4) guard utama: dictionary → heuristik kecil → heuristik normal =====
 export function ensureReadableSpacing(s: string) {
   const trimmed = s.replace(/\s+/g, ' ').trim();
   if (!isUnspaced(trimmed)) return trimmed;
 
-  const len = trimmed.length;
-  // ≤8 huruf: blok 2–4, supaya "tadigalga" → "tadi galga" (lebih kebaca)
-  if (len <= 8) return insertHeuristicSpaces(trimmed, { target: 3, min: 2, max: 4 });
-  // ≤20 huruf: blok 2–6
-  if (len <= 20) return insertHeuristicSpaces(trimmed, { target: 4, min: 2, max: 6 });
-  // sisanya: default (3–9)
-  return insertHeuristicSpaces(trimmed, { target: 6, min: 3, max: 9 });
+  // langkah 1: pecah berdasarkan kamus kata umum
+  const withBoundaries = insertDictionaryBoundaries(trimmed);
+
+  // kalau masih “nyatu” (mis. kata panjang asing), jatuhkan ke heuristik
+  const len = withBoundaries.length;
+  if (isUnspaced(withBoundaries)) {
+    if (len <= 8)  return insertHeuristicSpaces(withBoundaries, { target: 3, min: 2, max: 4 });
+    if (len <= 20) return insertHeuristicSpaces(withBoundaries, { target: 4, min: 2, max: 6 });
+    return insertHeuristicSpaces(withBoundaries, { target: 6, min: 3, max: 9 });
+  }
+
+  return withBoundaries;
 }
